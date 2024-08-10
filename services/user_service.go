@@ -7,7 +7,7 @@ import (
 )
 
 type UserService struct {
-	Repo *repositories.UseRepository
+	Repo *repositories.UserRepository
 }
 
 //CreateUser create a nwe user
