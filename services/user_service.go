@@ -15,7 +15,10 @@ func (service *UserService) CreateUser(user models.User) (*models.User, error){
 	_,err:= service.Repo.CreateUser(user)
 	return &user,err
 }
-
+//GetAllUsers return a paginated list of users
+func (service *UserService) GetAllUsers(limit, offset int) ([]models.User, error){
+	return service.Repo.GetAllUsers(limit,offset)
+}
 //GEtUserByID returns a user by thier ID
 func (service *UserService) GetUserByID(id string) (*models.User, error){
 	objectID , _ := primitive.ObjectIDFromHex(id)

@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //UseRepository handles the CRUD operations with the MongoDB database
@@ -20,7 +21,26 @@ type UserRepository struct {
 func (repo *UserRepository) CreateUser(user models.User) (*mongo.InsertOneResult, error) {
 	return repo.Collection.InsertOne(context.TODO(),user)
 }
+//GetAllUsers fetches users with pagination 
+func (repo *UserRepository) GetAllUsers(limit, offset int) ([]models.User, error){
+	var users []models.User 
 
+	findOptions := options.Find()
+	findOptions.SetLimit(int64(limit))
+	findOptions.SetSkip(int64(offset))
+
+
+	cursor, err:= repo.Collection.Find(context.TODO(), bson.M{},findOptions)
+
+	if err != nil {
+		return nil, err 
+	}
+
+	if err = cursor.All(context.TODO(),&users) ;err != nil {
+		return nil, err 
+	}
+	return users, nil
+}
 //GetUserByID fetches a user by their ID
 func (repo *UserRepository) GetUserByID(id primitive.ObjectID) (models.User, error) {
 	var user models.User

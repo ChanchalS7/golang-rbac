@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ChanchalS7/golang-rbac/auth"
 	"github.com/ChanchalS7/golang-rbac/models"
 	"github.com/ChanchalS7/golang-rbac/services"
 	"github.com/ChanchalS7/golang-rbac/utils"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
 
@@ -68,4 +71,67 @@ func (uc *UserController) DeleteUser(w http.ResponseWriter, r *http.Request){
 		return 
 	}
 	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"result":"success"})
+}
+
+
+// SignUp handles user registrations
+
+func (uc *UserController) SignUp(w http.ResponseWriter, r *http.Request){
+	var user models.User
+
+	_= json.NewDecoder(r.Body).Decode(&user)
+
+	//Hash the password before storing it
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	
+	if err != nil {
+		utils.ResponseWithError(w, http.StatusInternalServerError, "Error hashing password")
+		return 
+	}
+	user.Password = string(hashedPassword)
+
+	_, err  = uc.UserService.CreateUser(user)
+
+	if err !=nil {
+		utils.ResponseWithError(w, http.StatusInternalServerError,"Error creating user")
+		return 
+	}
+	utils.RespondWithJSON(w, http.StatusCreated, user)
+}
+
+//Login handles user authentication 
+func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
+
+	var creds models.User
+
+	_ = json.NewDecoder(r.Body).Decode(&creds)
+
+	//Fetch user from database
+
+	user, err := uc.UserService.FindUserByEmail(creds.Email)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments{
+			utils.ResponseWithError(w, http.StatusUnauthorized, "Invalid credentials")
+		}else {
+			utils.ResponseWithError(w, http.StatusInternalServerError, "Error finding user")
+		}
+		return user 
+	}
+
+	//Compare passwords
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
+	if err != nil {
+		utils.ResponseWithError(w, http.StatusUnauthorized,"Invalid credentials")
+		return 
+	}
+
+	//Generate JWT
+	token, err := auth.GenerateJWT(user.Email)
+	if err != nil {
+		utils.ResponseWithError(w, http.StatusInternalServerError, "Error generating token")
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"token":token})
 }
