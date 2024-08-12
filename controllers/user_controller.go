@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/ChanchalS7/golang-rbac/auth"
 	"github.com/ChanchalS7/golang-rbac/models"
@@ -32,6 +33,24 @@ func (uc *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return 
 	}
 	utils.RespondWithJSON(w, http.StatusCreated, createdUser)
+}
+//GetUsers handles fetching paginated users
+func (uc *UserController) GetUsers(w http.ResponseWriter, r *http.Request) {
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		limit = 10 //Default limit
+	}
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil {
+		offset = 0 //Default offset
+	}
+	users, err := uc.UserService.GetAllUsers(limit, offset)
+	if err != nil {
+		utils.ResponseWithError(w, http.
+			StatusInternalServerError, err.Error())
+			return
+	}
+	utils.RespondWithJSON(w, http.StatusOK,users)
 }
 //GetUserByID handles fetching a user by their ID
 func (uc *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +135,7 @@ func (uc *UserController) Login(w http.ResponseWriter, r *http.Request) {
 		}else {
 			utils.ResponseWithError(w, http.StatusInternalServerError, "Error finding user")
 		}
-		return user 
+		return 
 	}
 
 	//Compare passwords

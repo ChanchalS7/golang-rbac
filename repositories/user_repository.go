@@ -81,3 +81,16 @@ func (repo *UserRepository) UpdateUser(id primitive.ObjectID, user models.User) 
 func (repo *UserRepository) DeleteUser(id primitive.ObjectID) (*mongo.DeleteResult, error) {
 	return repo.Collection.DeleteOne(context.TODO(), bson.M{"_id":id})
 }
+
+//FindUsersByEmail retrieves a user by their email address
+func (repo *UserRepository) FindUserByEmail(email string) (*models.User, error){
+	var user models.User 
+
+	filter := bson.M{"email":email}
+	err := repo.Collection.FindOne(context.TODO(),filter).Decode(&user)
+
+	if err!= nil {
+		return nil,err 
+	}
+	return &user, nil 
+}

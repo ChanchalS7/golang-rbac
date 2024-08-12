@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"internal/intern"
 	"os"
 	"time"
 

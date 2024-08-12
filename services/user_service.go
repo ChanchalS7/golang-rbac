@@ -38,5 +38,10 @@ func (service *UserService) DeleteUser(id string) error{
 	objectID, _:= primitive.ObjectIDFromHex(id)
 	_,err:= service.Repo.DeleteUser(objectID)
 return err
+}
 
+//FindUserByEmail retrives a user by their email address using the repository
+
+func (service *UserService) FindUserByEmail(email string) (*models.User, error) {
+	return service.Repo.FindUserByEmail(email)
 }
