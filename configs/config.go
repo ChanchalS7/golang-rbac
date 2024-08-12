@@ -20,7 +20,7 @@ func Loadenv(){
 
 //ConnectDB established a connection to MongoDB
 func ConnectDB() *mongo.Client {
-
+	
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 
