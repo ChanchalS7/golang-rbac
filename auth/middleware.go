@@ -17,14 +17,23 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			utils.ResponseWithError(w, http.StatusUnauthorized, "Authorization token missing")
 			return
 		}
-		token = strings.TrimPrefix(token, "Bearer")
+		// token = strings.TrimPrefix(token, "Bearer")
 
-		_, err := ValidateJWT(token)
+		//Extract the token form the header
+		tokenParts := strings.Split(token, " ")
+		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
+			utils.ResponseWithError(w, http.StatusUnauthorized, "Malformed token")
+			return 
+		}
+
+		// _, err := ValidateJWT(token)
+		_, err := ValidateJWT(tokenParts[1])
 		
 		if err != nil {
 			utils.ResponseWithError(w, http.StatusUnauthorized, "Invalid token")
 			return 
 		}
+		// Proceed to the next handler if the token is valid
 		next.ServeHTTP(w,r)
 	})
 }

@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ChanchalS7/golang-rbac/auth"
 	"github.com/ChanchalS7/golang-rbac/configs"
 	"github.com/ChanchalS7/golang-rbac/controllers"
 	"github.com/ChanchalS7/golang-rbac/repositories"
@@ -21,7 +20,6 @@ func main(){
 		userController := &controllers.UserController{UserService: userService}
 		
 		router := routes.InitializeRoutes(userController)
-		router.Use(auth.AuthMiddleware) //Protect routes with authentication
 		log.Println("Server started at: 8080")
-	log.Fatal(http.ListenAndServe(":8080",router))
+		log.Fatal(http.ListenAndServe(":8080",router))
 }
